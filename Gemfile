@@ -45,6 +45,9 @@ gem "tzinfo-data", platforms: %i[ mingw mswin x64_mingw jruby ]
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
+# This library provides integration of the money gem with Rails
+gem 'money-rails', '~> 1.12'
+
 # Use Sass to process CSS
 # gem "sassc-rails"
 
@@ -54,6 +57,10 @@ gem "bootsnap", require: false
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri mingw x64_mingw ]
+
+	# RSpec testing framework to Ruby on Rails as a drop-in alternative to its default testing framework, Minitest.
+	gem 'rspec-rails', '~> 6.0.0'
+
 end
 
 group :development do
