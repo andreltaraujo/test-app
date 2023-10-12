@@ -48,6 +48,9 @@ gem "bootsnap", require: false
 # This library provides integration of the money gem with Rails
 gem 'money-rails', '~> 1.12'
 
+# Sidekiq is a full-featured background job framework for Ruby
+gem 'sidekiq'
+
 # Use Sass to process CSS
 # gem "sassc-rails"
 
@@ -61,6 +64,8 @@ group :development, :test do
 	# RSpec testing framework to Ruby on Rails as a drop-in alternative to its default testing framework, Minitest.
 	gem 'rspec-rails', '~> 6.0.0'
 
+	# Factory_bot_rails provides Rails integration for factory_bot.
+	gem 'factory_bot_rails'
 end
 
 group :development do

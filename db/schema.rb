@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_07_225804) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_10_001032) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -33,6 +33,20 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_07_225804) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "order_commissions", force: :cascade do |t|
+    t.integer "order_amount_cents"
+    t.integer "sequra_amount_cents"
+    t.integer "merchant_amount_cents"
+    t.decimal "fee_percentage"
+    t.date "order_date"
+    t.bigint "order_id", null: false
+    t.bigint "disbursement_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["disbursement_id"], name: "index_order_commissions_on_disbursement_id"
+    t.index ["order_id"], name: "index_order_commissions_on_order_id"
+  end
+
   create_table "orders", force: :cascade do |t|
     t.string "merchant_reference"
     t.integer "amount_cents"
@@ -47,6 +61,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_07_225804) do
     t.index ["merchant_reference"], name: "index_orders_on_merchant_reference"
   end
 
+  add_foreign_key "order_commissions", "disbursements"
+  add_foreign_key "order_commissions", "orders"
   add_foreign_key "orders", "disbursements"
   add_foreign_key "orders", "merchants"
 end
