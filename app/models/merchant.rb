@@ -1,5 +1,6 @@
 class Merchant < ApplicationRecord
 	has_many :orders
+	has_many :disbursements, through: :orders
 
 	validates :reference, :live_on, :disbursement_frequency, presence: true	
 	validates :minimum_monthly_fee_cents, presence: true, numericality: { greater_than_or_equal_to: 0 }

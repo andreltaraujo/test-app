@@ -1,12 +1,20 @@
 class OrderCommissionGenerator
 
-	def execute(order_id)
-		order = Order.find_by(id: order_id)
-		if OrderCommission.where(order_id: order.id).empty?
-			commission = CommissionCalculator.new(order).calculate
-			OrderCommission.create(commission)
-		else
-			Rails.logger.error("[#{self.class.name}][Error: OrderCommission_ID: #{order.order_commission.id} already generated for Order_ID: #{order.id}]")
+	def self.execute(orders)
+		orders = Array.wrap(orders)
+		orders.each do |order|
+			if OrderCommission.where(order_id: order.id).empty?
+				order = Order.find_by(id: order.id)
+				commissions = []
+				commission = CommissionCalculator.new(order).calculate
+				debugger
+				order_commission = OrderCommission.create(commission)
+				commissions << order_commission
+			else
+				error_message = "[#{self.class.name}][Error: OrderCommission_ID: #{order.order_commission.id} already generated for Order_ID: #{order.id}]"
+				Rails.logger.error(error_message)
+				return nil
+			end
 		end
   end
 end

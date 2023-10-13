@@ -1,45 +1,43 @@
 module Disbursements
-  class DisbursementsTask
-    
+	class DisbursementsTask
+
+		def self.weekly_disbursements_dates(merchant)
+			start_date = merchant.live_on
+			end_date = Date.parse('08 Feb 2023')
+			weeks = (start_date..end_date).to_a.group_by { |date| [date.cweek, date.year] }
+			merchant_end_week_day = merchant.live_on.wday == 0 ? 6 : merchant.live_on.wday - 1
+			weeks_dates = []
+			weeks.each do |(week_number, year), dates|
+				merchant_week_end_day = dates.select { |date| date.wday == merchant_end_week_day }
+				merchant_end_week_date = merchant_week_end_day.first
+				if merchant_end_week_date
+					merchant_start_week_date = merchant_end_week_date - 6
+					weeks_dates << { start_date: merchant_start_week_date, end_date: merchant_end_week_date }
+				else
+					"No valid date found"
+					next
+				end
+			end
+			weeks_dates
+		end
+
 		def self.execute	
-			Merchant.where(disbursement_frequency: "WEEKLY").each do |merchant|
-				start_date = merchant.live_on
-				end_date = Date.parse('08 Feb 2023')
-				weeks = (start_date..end_date).to_a.group_by { |date| [date.cweek, date.year] }
-				merchant_end_week_day = merchant.live_on.wday == 0 ? 6 : merchant.live_on.wday - 1
-					weeks.each do |(week_number, year), dates|
-						merchant_week_end_day = dates.select { |date| date.wday == merchant_end_week_day }
-						merchant_end_week_date = merchant_week_end_day.first
-						if merchant_end_week_date
-							merchant_start_week_date = merchant_end_week_date - 6
-						else
-							puts "No valid date found"
-							next
-						end
-						merchant_week_day = dates.select { |date| date.wday == merchant.live_on.wday}
-						disbursement_day = merchant_week_day.first
-						if disbursement_day
-							disbursement_day = disbursement_day
-						else
-							puts "No valid date found"
-						end
-						commissions_for_week = OrderCommission.joins(:order).where(orders: { merchant_reference: merchant.reference }).where(created_at: merchant_start_week_date.beginning_of_day..merchant_end_week_date.end_of_day)
+			merchant = Merchant.find(3) #Merchant.where(disbursement_frequency: "WEEKLY").each do |merchant|
+			weekly_disbursements_dates = weekly_disbursements_dates(merchant)
+			weekly_disbursements_dates.each do |disbursement_dates|
+					commissions_for_week = OrderCommission.joins(:order).where(orders: { merchant_reference: merchant.reference }).where(created_at: disbursement_dates[:start_date].beginning_of_day..disbursement_dates[:end_date].end_of_day)
 						if commissions_for_week.any?
-							disbursement_amounts = { order_fee_amount: 0, amount: 0 }
-							commissions_for_week.each do |commission|
-								debugger
-								disbursement_amounts[:order_fee_amount] += commission.sequra_amount
-								disbursement_amounts[:amount] += commission.merchant_amount
-							end
+							order_fee_amount = commissions_for_week.sum(:sequra_amount_cents)
+							amount = commissions_for_week.sum(:merchant_amount_cents)
 							disbursement = nil
 							begin
 								Disbursement.transaction do
 									disbursement = Disbursement.create!( 
 									reference: SecureRandom.alphanumeric(13),	
-									order_fee_amount: disbursement_amounts[:order_fee_amount],
-										amount: disbursement_amounts[:merchant_amount],
+									order_fee_amount: order_fee_amount,
+										amount: amount,
 										currency: 'EUR',
-										created_at: disbursement_day
+										created_at: disbursement_dates[:end_date] + 1.day
 									)
 									updated_associated_records = []
 									commissions_for_week.each do |commission|
@@ -60,6 +58,23 @@ module Disbursements
 							Rails.logger.info "No orders for week #{week_number} for merchant #{merchant.reference}"
 						end
 					end
+				end
+			#end
+		end
+
+		def disbursement_day(merchant)
+			start_date = merchant.live_on
+			end_date = Date.parse('08 Feb 2023')
+			weeks = (start_date..end_date).to_a.group_by { |date| [date.cweek, date.year] }
+			merchant_end_week_day = merchant.live_on.wday == 0 ? 6 : merchant.live_on.wday - 1
+			merchant_dates = []
+			weeks.each do |(week_number, year), dates|
+				merchant_week_day = dates.select { |date| date.wday == merchant.live_on.wday}
+				disbursement_day = merchant_week_day.first
+				if disbursement_day
+					merchant_dates << disbursement_day
+				else
+				"No valid date found"
 				end
 			end
 		end
