@@ -22,7 +22,7 @@ module Disbursements
 		end
 
 		def self.execute	
-			merchant = Merchant.find(3) #Merchant.where(disbursement_frequency: "WEEKLY").each do |merchant|
+			merchant = Merchant.where(disbursement_frequency: "WEEKLY").each do |merchant|
 			weekly_disbursements_dates = weekly_disbursements_dates(merchant)
 			weekly_disbursements_dates.each do |disbursement_dates|
 					commissions_for_week = OrderCommission.joins(:order).where(orders: { merchant_reference: merchant.reference }).where(created_at: disbursement_dates[:start_date].beginning_of_day..disbursement_dates[:end_date].end_of_day)
@@ -59,7 +59,7 @@ module Disbursements
 						end
 					end
 				end
-			#end
+			end
 		end
 
 		def disbursement_day(merchant)

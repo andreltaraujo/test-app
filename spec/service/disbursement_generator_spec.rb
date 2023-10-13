@@ -17,7 +17,7 @@ RSpec.describe DisbursementGenerator do
 			describe '#execute' do
 				context 'When merchant have orders to process' do
 					it 'generate order commissions for disbursements' do
-						allow(OrderCommissionGenerator).to receive(:execute).and_return(generated_commissions_no_orders)
+						allow(OrderCommissionGenerator).to receive(:execute).and_return(generated_commissions)
 						expect(generated_commissions_no_orders.sum(&:merchant_amount_cents)).to eq(17626)
 					end
 				end
