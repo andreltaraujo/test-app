@@ -1,6 +1,6 @@
 module Commissions
   class CommissionsTask
-    def self.execute
+    def execute
 			merchant_ids = Merchant.all.pluck(:id)
 			merchant_ids.each do |merchant_id|
 				merchant_reference = Merchant.find(merchant_id).reference
@@ -11,8 +11,8 @@ module Commissions
 				Rails.logger.info("[Commissions::CommissionsTask] - Starting process...")
 				Rails.logger.info("[Commissions::CommissionsTask] - Merchant reference: #{merchant_reference}")
 				count = 0
-				Order.joins(:merchant).where("merchant_reference = ?", merchant_reference).find_each do |order| 
-					OrderCommissionGeneratorWorker.perform_async(order.id)
+				Order.joins(:merchant).where("merchant_reference = ?", merchant_reference).find_each do |order|
+					OrderCommissionGeneratorWorker.perform_async(order)
 					count += 1
 				end
 				Rails.logger.info("[Commissions::CommissionsTask] - #{count} registers for #{merchant_reference} to be processed")
@@ -21,4 +21,3 @@ module Commissions
     end
   end
 end
-22537370

@@ -1,6 +1,6 @@
 class OrderCommissionGenerator
 
-	def self.execute(orders)
+	def execute(orders)
 		orders = Array.wrap(orders)
 		orders.each do |order|
 			if OrderCommission.where(order_id: order.id).empty?

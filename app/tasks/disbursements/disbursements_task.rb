@@ -1,7 +1,7 @@
 module Disbursements
 	class DisbursementsTask
 
-		def self.weekly_disbursements_dates(merchant)
+		def weekly_disbursements_dates(merchant)
 			start_date = merchant.live_on
 			end_date = Date.parse('08 Feb 2023')
 			weeks = (start_date..end_date).to_a.group_by { |date| [date.cweek, date.year] }
@@ -21,7 +21,7 @@ module Disbursements
 			weeks_dates
 		end
 
-		def self.execute	
+		def execute	
 			merchant = Merchant.where(disbursement_frequency: "WEEKLY").each do |merchant|
 			weekly_disbursements_dates = weekly_disbursements_dates(merchant)
 			weekly_disbursements_dates.each do |disbursement_dates|

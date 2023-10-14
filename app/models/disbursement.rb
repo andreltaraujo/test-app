@@ -12,6 +12,6 @@ class Disbursement < ApplicationRecord
 	private
 
 	def generate_reference
-		self.reference = SecureRandom.alphanumeric(13)
+		reference = SecureRandom.alphanumeric(13)
 	end
 end

@@ -37,7 +37,7 @@ class DisbursementGenerator
 		end
 	end
 
-	def self.weekly_disbursements_dates(merchant)
+	def weekly_disbursements_dates(merchant)
 		current_date = Date.today
 		current_week_day = Date.today.wday
 		if merchant.live_on.wday == current_week_day # Make sure the eligible merchant live_on day is the same as today
@@ -51,11 +51,11 @@ class DisbursementGenerator
 		end
 	end
 
-	def self.merchants_weekly_today
+	def merchants_weekly_today
 		Merchant.weekly_eligible_merchants		
 	end
 
-	def self.fetch_orders_weekly(merchant, dates)
+	def fetch_orders_weekly(merchant, dates)
 		Order.weekly_disbursements(merchant.reference, dates[:merchant_week_start_date], dates[:merchant_week_end_date])
 	end
 end
