@@ -1,0 +1,57 @@
+allow_any_instance_of(GetCommissionFee).to receive(:commissioning_percentage_fee).and_return(0.0085)
+		allow_any_instance_of(CommissionCalculator).to receive(:order_amount).and_return(45328)
+		allow_any_instance_of(CommissionCalculator).to receive(:order_date).and_return('21-01-2023')
+		allow_any_instance_of(CommissionCalculator).to receive(:order_id).and_return(150887)
+		allow_any_instance_of(CommissionCalculator).to receive(:pricing_commission).and_return(0.0085)
+		allow_any_instance_of(CommissionCalculator).to receive(:sequra_amount).and_return(385)
+		allow_any_instance_of(CommissionCalculator).to receive(:merchant_amount).and_return(44943)
+		allow_any_instance_of(CommissionCalculator).to receive(:fee_percentage).and_return(0.0085)
+		allow_any_instance_of(CommissionCalculator).to receive(:calculated_data).and_return(order_commission)
+		allow_any_instance_of(Commission).to receive(:build_commission).and_return(order_commission)
+		commission = described_class.new(order).calculate
+		expect(commission).to eq(order_commission)
+	end
+
+	Separar os reembolsos por semena para os "weekly"
+
+	Separa os reembolsos diários para "daily"
+
+	Para weekly:
+	1. Escolher o dia da semana baseado no week day do live_on
+		início: data da primeira order
+		fim: data da última order
+		1.1. Se o dia da semana for sábado ou domingo, pular para o próximo dia da semana?
+		não
+		
+	2. Separar as orders da semana
+		2.1. Se não tiver orders, pular para a próxima semana
+		
+	3. Gerar o reembolso da semana para o comerciante
+
+	start_date = Date.parse('04 Sep 2022')
+	end_date = Date.parse('08 Feb 2023')
+	weeks = (start_date..end_date).to_a.group_by { |date| [date.cweek, date.year] }
+		
+	Merchant.where(disbursement_frequency: "WEEKLY").each do |merchant|
+		wday = merchant.live_on.wday
+		weeks.each do |(week_number, year), dates|
+			week_start_date = dates.min
+			week_end_date = dates.max
+			orders_for_week = Order.where(merchant_reference: merchant.reference).where(created_at: week_start_date.beginning_of_day..week_end_date.end_of_day)
+			if orders_for_week.any?
+				Disbursement.create(
+					merchant_reference: merchant.reference,
+					amount: orders_for_week.sum(:amount),
+					week_number: week_number,
+					year: year,
+					week_start_date: week_start_date,
+					week_end_date: week_end_date,
+					merchant_amount: orders_for_week.sum(:merchant_amount),
+					sequra_amount: orders_for_week.sum(:sequra_amount),
+					fee_percentage: orders_for_week.sum(:fee_percentage),
+					fee_amount: orders_for_week.sum(:fee_amount),
+					created_at: dates.select { |date| date.wday == wday }
+				)
+			end
+		end
+	end
