@@ -1,5 +1,5 @@
 class Order < ApplicationRecord
-  VALUE_FOR_FEE_100 = 4999
+	VALUE_FOR_FEE_100 = 4999
 	VALUES_FOR_FEE_095 = (5000..29999)
 	VALUE_FOR_FEE_085 = 30000
 	
@@ -12,12 +12,13 @@ class Order < ApplicationRecord
 	
 	monetize :amount_cents
 	
-	scope :with_fee_100, -> { where('amount <= ?', VALUE_FOR_FEE_100) }
-	scope :with_fee_095, -> { where(amount:  VALUES_FOR_FEE_095) } 
-	scope :with_fee_085, -> { where('amount >= ?', VALUE_FOR_FEE_085) }
-
-	scope :with_fee_100_by_merchant, ->(merchant_reference) { where(merchant_reference: merchant_reference).where('amount <= ?', VALUE_FOR_FEE_100) }
-	scope :with_fee_095_by_merchant, ->(merchant_reference) { where(merchant_reference: merchant_reference).where(amount:  VALUES_FOR_FEE_095) } 
-	scope :with_fee_085_by_merchant, ->(merchant_reference) { where(merchant_reference: merchant_reference).where('amount >= ?', VALUE_FOR_FEE_085) }
-	
+	scope :for_merchant, ->(merchant_reference) { where(merchant_reference: merchant_reference) }
+	scope :daily_disbursements, ->(merchant_reference, date) { for_merchant(merchant_reference).where(created_at: date.beginning_of_day..date.end_of_day) }
+  scope :within_date_range, ->(start_date, end_date) { where(created_at: start_date.beginning_of_day..end_date.end_of_day) }
+	scope :not_disbursed, -> { where(disbursement_id: nil, disbursement_reference: nil) }
+  scope :weekly_disbursements, ->(merchant_reference, start_date, end_date) {
+		for_merchant(merchant_reference)
+		.within_date_range(start_date, end_date)
+		.not_disbursed
+	}
 end

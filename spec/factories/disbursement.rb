@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :disbursement do
-		order_fee_amount { 98.00 }
-		amount { 1000.00 }
+		order_fee_amount { 1.75 }
+		amount { 176.26 }
 		currency	{ 'EUR' }
 
 		before(:create) do |disbursement|

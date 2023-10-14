@@ -6,4 +6,9 @@ FactoryBot.define do
  		disbursement_frequency { "DAILY" }
  		minimum_monthly_fee { 15.00 }
   end
+
+	trait :weekly do
+		disbursement_frequency { "WEEKLY" }
+		live_on { Date.today }
+	end
 end
